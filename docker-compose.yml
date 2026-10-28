@@ -8,6 +8,7 @@ services:
   # ---------- Databases ----------
   artist-db:
     image: postgres:17
+    ports: ["127.0.0.1:5433:5432"]
     environment:
       POSTGRES_DB: artistdb
       POSTGRES_USER: ${DB_USER}
@@ -17,6 +18,7 @@ services:
 
   category-db:
     image: postgres:17
+    ports: ["127.0.0.1:5434:5432"]
     environment:
       POSTGRES_DB: categorydb
       POSTGRES_USER: ${DB_USER}
@@ -26,6 +28,7 @@ services:
 
   event-db:
     image: postgres:17
+    ports: ["127.0.0.1:5435:5432"]
     environment:
       POSTGRES_DB: eventdb
       POSTGRES_USER: ${DB_USER}
@@ -35,6 +38,7 @@ services:
 
   media-db:
     image: postgres:17
+    ports: ["127.0.0.1:5436:5432"]
     environment:
       POSTGRES_DB: mediadb
       POSTGRES_USER: ${DB_USER}
@@ -45,6 +49,7 @@ services:
   # ---------- Services ----------
   artist:
     build: ./artist
+    ports: ["127.0.0.1:8081:8080"]
     environment:
       DB_URL: jdbc:postgresql://artist-db:5432/artistdb
       DB_USER: ${DB_USER}
@@ -54,6 +59,7 @@ services:
 
   booking-category:
     build: ./booking-category
+    ports: ["127.0.0.1:8082:8080"]
     environment:
       DB_URL: jdbc:postgresql://category-db:5432/categorydb
       DB_USER: ${DB_USER}
@@ -63,6 +69,7 @@ services:
 
   concert-event:
     build: ./concert-event
+    ports: ["127.0.0.1:8083:8080"]
     environment:
       DB_URL: jdbc:postgresql://event-db:5432/eventdb
       DB_USER: ${DB_USER}
@@ -72,6 +79,7 @@ services:
 
   promo-media:
     build: ./promo-media
+    ports: ["127.0.0.1:8084:8080"]
     environment:
       DB_URL: jdbc:postgresql://media-db:5432/mediadb
       DB_USER: ${DB_USER}
