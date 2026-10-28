@@ -1,0 +1,20 @@
+# Maven
+target/
+
+# VS Code
+.vscode/
+!.vscode/extensions.json
+*.code-workspace
+
+# IntelliJ / JetBrains
+.idea/
+
+# ==========================================
+# Environments and Secrets (NEVER COMMIT)
+# ==========================================
+.env
+.env.local
+.env.*.local
+*.env
+*.bak
+*.config

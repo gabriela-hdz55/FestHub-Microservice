@@ -1,0 +1,101 @@
+x-postgres-health: &pg-health
+  test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+  interval: 5s
+  timeout: 3s
+  retries: 10
+
+services:
+  # ---------- Databases ----------
+  artist-db:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: artistdb
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes: [artist-db-data:/var/lib/postgresql/data]
+    healthcheck: *pg-health
+
+  category-db:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: categorydb
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes: [category-db-data:/var/lib/postgresql/data]
+    healthcheck: *pg-health
+
+  event-db:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: eventdb
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes: [event-db-data:/var/lib/postgresql/data]
+    healthcheck: *pg-health
+
+  media-db:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: mediadb
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes: [media-db-data:/var/lib/postgresql/data]
+    healthcheck: *pg-health
+
+  # ---------- Services ----------
+  artist:
+    build: ./artist
+    environment:
+      DB_URL: jdbc:postgresql://artist-db:5432/artistdb
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+    depends_on:
+      artist-db: { condition: service_healthy }
+
+  booking-category:
+    build: ./booking-category
+    environment:
+      DB_URL: jdbc:postgresql://category-db:5432/categorydb
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+    depends_on:
+      category-db: { condition: service_healthy }
+
+  concert-event:
+    build: ./concert-event
+    environment:
+      DB_URL: jdbc:postgresql://event-db:5432/eventdb
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+    depends_on:
+      event-db: { condition: service_healthy }
+
+  promo-media:
+    build: ./promo-media
+    environment:
+      DB_URL: jdbc:postgresql://media-db:5432/mediadb
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+    depends_on:
+      media-db: { condition: service_healthy }
+
+  # ---------- Edge ----------
+  gateway:
+    build: ./gateway
+    ports: ["8080:8080"]
+    depends_on: [artist, booking-category, concert-event, promo-media]
+
+  client:
+    build:
+      context: .
+      dockerfile: client/Dockerfile
+    ports: [ "80:80" ]
+    environment:
+      API_URL: http://localhost
+    depends_on: [ gateway ]
+
+volumes:
+  artist-db-data:
+  category-db-data:
+  event-db-data:
+  media-db-data:
