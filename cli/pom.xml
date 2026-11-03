@@ -36,7 +36,7 @@
                         <configuration>
                             <transformers>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                    <mainClass>com.example.platform.cli.Main</mainClass>
+                                    <mainClass>com.festhub.platform.cli.Main</mainClass>
                                 </transformer>
                             </transformers>
                         </configuration>
