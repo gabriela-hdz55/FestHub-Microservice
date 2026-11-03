@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>FestHub</title>
+
+    <link
+        rel="stylesheet"
+        href="/css/style.css"
+    >
+</head>
+
+<body>
+
+<header class="site-header">
+    <div>
+        <h1>FestHub</h1>
+        <p>Festival Management Platform</p>
+    </div>
+</header>
+
+
+<main class="container">
+
+    <!-- ========================= -->
+    <!-- MAIN NAVIGATION           -->
+    <!-- ========================= -->
+
+    <section
+        id="main-menu"
+        class="panel"
+    >
+
+        <h2>Management</h2>
+
+        <p>
+            Select a record type to manage.
+        </p>
+
+        <div class="menu-grid">
+
+            <button
+                class="menu-button"
+                onclick="showSection('events-section')"
+            >
+                Concert Events
+            </button>
+
+            <button
+                class="menu-button"
+                onclick="showSection('artists-section')"
+            >
+                Artists
+            </button>
+
+            <button
+                class="menu-button"
+                onclick="showSection('categories-section')"
+            >
+                Festival Categories
+            </button>
+
+            <button
+                class="menu-button"
+                onclick="showSection('media-section')"
+            >
+                Promotional Media
+            </button>
+
+        </div>
+
+    </section>
+
+
+    <!-- ========================= -->
+    <!-- CONCERT EVENTS            -->
+    <!-- ========================= -->
+
+    <section
+        id="events-section"
+        class="panel hidden"
+    >
+
+        <div class="section-heading">
+
+            <h2>Concert Events</h2>
+
+            <button
+                class="secondary-button"
+                onclick="showMainMenu()"
+            >
+                Back
+            </button>
+
+        </div>
+
+        <p>
+            Concert Event API integration
+            will be connected here.
+        </p>
+
+    </section>
+
+
+    <!-- ========================= -->
+    <!-- ARTISTS                   -->
+    <!-- ========================= -->
+
+    <section
+        id="artists-section"
+        class="panel hidden"
+    >
+
+        <div class="section-heading">
+
+            <h2>Artists</h2>
+
+            <button
+                class="secondary-button"
+                onclick="showMainMenu()"
+            >
+                Back
+            </button>
+
+        </div>
+
+        <p>
+            Artist API integration
+            will be connected here.
+        </p>
+
+    </section>
+
+
+    <!-- ========================= -->
+    <!-- FESTIVAL CATEGORIES       -->
+    <!-- ========================= -->
+
+    <section
+        id="categories-section"
+        class="panel hidden"
+    >
+
+        <div class="section-heading">
+
+            <h2>Festival Categories</h2>
+
+            <button
+                class="secondary-button"
+                onclick="showMainMenu()"
+            >
+                Back
+            </button>
+
+        </div>
+
+
+        <!-- CREATE -->
+
+        <div class="crud-card">
+
+            <h3>Create Category</h3>
+
+            <label for="create-category-name">
+                Name
+            </label>
+
+            <input
+                id="create-category-name"
+                type="text"
+                placeholder="Category name"
+            >
+
+
+            <label for="create-category-description">
+                Description
+            </label>
+
+            <textarea
+                id="create-category-description"
+                placeholder="Category description"
+            ></textarea>
+
+
+            <button
+                onclick="createCategory()"
+            >
+                Create Category
+            </button>
+
+        </div>
+
+
+        <!-- READ -->
+
+        <div class="crud-card">
+
+            <h3>Find Category</h3>
+
+            <label for="read-category-id">
+                Category ID
+            </label>
+
+            <input
+                id="read-category-id"
+                type="text"
+                placeholder="UUID"
+            >
+
+            <button
+                onclick="readCategory()"
+            >
+                Find Category
+            </button>
+
+
+            <div
+                id="read-category-result"
+                class="result-box"
+            ></div>
+
+        </div>
+
+
+        <!-- UPDATE -->
+
+        <div class="crud-card">
+
+            <h3>Update Category</h3>
+
+            <label for="update-category-id">
+                Category ID
+            </label>
+
+            <input
+                id="update-category-id"
+                type="text"
+                placeholder="UUID"
+            >
+
+
+            <label for="update-category-name">
+                New Name
+            </label>
+
+            <input
+                id="update-category-name"
+                type="text"
+                placeholder="New category name"
+            >
+
+
+            <label for="update-category-description">
+                New Description
+            </label>
+
+            <textarea
+                id="update-category-description"
+                placeholder="New category description"
+            ></textarea>
+
+
+            <button
+                onclick="updateCategory()"
+            >
+                Update Category
+            </button>
+
+        </div>
+
+
+        <!-- DELETE -->
+
+        <div class="crud-card">
+
+            <h3>Delete Category</h3>
+
+            <label for="delete-category-id">
+                Category ID
+            </label>
+
+            <input
+                id="delete-category-id"
+                type="text"
+                placeholder="UUID"
+            >
+
+            <button
+                class="danger-button"
+                onclick="deleteCategory()"
+            >
+                Delete Category
+            </button>
+
+        </div>
+
+
+        <!-- LIST -->
+
+        <div class="crud-card">
+
+            <div class="section-heading">
+
+                <h3>All Categories</h3>
+
+                <button
+                    onclick="loadCategories()"
+                >
+                    Refresh
+                </button>
+
+            </div>
+
+
+            <div
+                id="category-list"
+                class="record-list"
+            >
+                No categories loaded.
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- ========================= -->
+    <!-- PROMOTIONAL MEDIA         -->
+    <!-- ========================= -->
+
+    <section
+        id="media-section"
+        class="panel hidden"
+    >
+
+        <div class="section-heading">
+
+            <h2>Promotional Media</h2>
+
+            <button
+                class="secondary-button"
+                onclick="showMainMenu()"
+            >
+                Back
+            </button>
+
+        </div>
+
+        <p>
+            Promotional Media API integration
+            will be connected here.
+        </p>
+
+    </section>
+
+
+    <!-- ========================= -->
+    <!-- STATUS MESSAGE            -->
+    <!-- ========================= -->
+
+    <div
+        id="message"
+        class="message hidden"
+    ></div>
+
+</main>
+
+
+<script src="/js/app.js"></script>
+
+</body>
+</html>
