@@ -2,374 +2,551 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>FestHub</title>
 
-    <link
-        rel="stylesheet"
-        href="/css/style.css"
-    >
+    <link rel="stylesheet" href="/css/style.css">
 </head>
 
 <body>
 
-<header class="site-header">
-    <div>
-        <h1>FestHub</h1>
-        <p>Festival Management Platform</p>
+<h1>FestHub</h1>
+
+<p class="subtitle">
+    Festival Management Platform
+</p>
+
+
+<!-- ===================================================== -->
+<!-- MAIN NAVIGATION                                       -->
+<!-- ===================================================== -->
+
+<div class="navigation">
+
+    <button onclick="showPanel('artists-panel')">
+        Manage Artists
+    </button>
+
+    <button onclick="showPanel('events-panel')">
+        Manage Events
+    </button>
+
+    <button onclick="showPanel('categories-panel')">
+        Manage Categories
+    </button>
+
+    <button onclick="showPanel('media-panel')">
+        Manage Media
+    </button>
+
+</div>
+
+
+<!-- ===================================================== -->
+<!-- ARTISTS                                               -->
+<!-- ===================================================== -->
+
+<div id="artists-panel" class="panel">
+
+    <h2>Artist Management</h2>
+
+
+    <h3>Create New Artist</h3>
+
+    <label>
+        Artist Name
+    </label>
+
+    <input
+        id="artist-create-name"
+        type="text"
+    >
+
+
+    <label>
+        Booking Contact
+    </label>
+
+    <input
+        id="artist-create-contact"
+        type="text"
+    >
+
+
+    <button
+        onclick="artistNotConnected()"
+    >
+        Create Artist
+    </button>
+
+
+    <hr>
+
+
+    <h3>Manage Existing Artists</h3>
+
+    <label>
+        Artist UUID
+    </label>
+
+    <input
+        id="artist-id"
+        type="text"
+        placeholder="Enter artist UUID"
+    >
+
+
+    <div class="button-row">
+
+        <button onclick="artistNotConnected()">
+            Read
+        </button>
+
+        <button
+            class="danger"
+            onclick="artistNotConnected()"
+        >
+            Delete
+        </button>
+
     </div>
-</header>
 
 
-<main class="container">
+    <label>
+        Artist Name
+    </label>
 
-    <!-- ========================= -->
-    <!-- MAIN NAVIGATION           -->
-    <!-- ========================= -->
-
-    <section
-        id="main-menu"
-        class="panel"
+    <input
+        id="artist-update-name"
+        type="text"
     >
 
-        <h2>Management</h2>
 
-        <p>
-            Select a record type to manage.
-        </p>
+    <label>
+        Booking Contact
+    </label>
 
-        <div class="menu-grid">
-
-            <button
-                class="menu-button"
-                onclick="showSection('events-section')"
-            >
-                Concert Events
-            </button>
-
-            <button
-                class="menu-button"
-                onclick="showSection('artists-section')"
-            >
-                Artists
-            </button>
-
-            <button
-                class="menu-button"
-                onclick="showSection('categories-section')"
-            >
-                Festival Categories
-            </button>
-
-            <button
-                class="menu-button"
-                onclick="showSection('media-section')"
-            >
-                Promotional Media
-            </button>
-
-        </div>
-
-    </section>
-
-
-    <!-- ========================= -->
-    <!-- CONCERT EVENTS            -->
-    <!-- ========================= -->
-
-    <section
-        id="events-section"
-        class="panel hidden"
+    <input
+        id="artist-update-contact"
+        type="text"
     >
 
-        <div class="section-heading">
 
-            <h2>Concert Events</h2>
+    <button onclick="artistNotConnected()">
+        Update Artist
+    </button>
 
-            <button
-                class="secondary-button"
-                onclick="showMainMenu()"
-            >
-                Back
-            </button>
-
-        </div>
-
-        <p>
-            Concert Event API integration
-            will be connected here.
-        </p>
-
-    </section>
-
-
-    <!-- ========================= -->
-    <!-- ARTISTS                   -->
-    <!-- ========================= -->
-
-    <section
-        id="artists-section"
-        class="panel hidden"
-    >
-
-        <div class="section-heading">
-
-            <h2>Artists</h2>
-
-            <button
-                class="secondary-button"
-                onclick="showMainMenu()"
-            >
-                Back
-            </button>
-
-        </div>
-
-        <p>
-            Artist API integration
-            will be connected here.
-        </p>
-
-    </section>
-
-
-    <!-- ========================= -->
-    <!-- FESTIVAL CATEGORIES       -->
-    <!-- ========================= -->
-
-    <section
-        id="categories-section"
-        class="panel hidden"
-    >
-
-        <div class="section-heading">
-
-            <h2>Festival Categories</h2>
-
-            <button
-                class="secondary-button"
-                onclick="showMainMenu()"
-            >
-                Back
-            </button>
-
-        </div>
-
-
-        <!-- CREATE -->
-
-        <div class="crud-card">
-
-            <h3>Create Category</h3>
-
-            <label for="create-category-name">
-                Name
-            </label>
-
-            <input
-                id="create-category-name"
-                type="text"
-                placeholder="Category name"
-            >
-
-
-            <label for="create-category-description">
-                Description
-            </label>
-
-            <textarea
-                id="create-category-description"
-                placeholder="Category description"
-            ></textarea>
-
-
-            <button
-                onclick="createCategory()"
-            >
-                Create Category
-            </button>
-
-        </div>
-
-
-        <!-- READ -->
-
-        <div class="crud-card">
-
-            <h3>Find Category</h3>
-
-            <label for="read-category-id">
-                Category ID
-            </label>
-
-            <input
-                id="read-category-id"
-                type="text"
-                placeholder="UUID"
-            >
-
-            <button
-                onclick="readCategory()"
-            >
-                Find Category
-            </button>
-
-
-            <div
-                id="read-category-result"
-                class="result-box"
-            ></div>
-
-        </div>
-
-
-        <!-- UPDATE -->
-
-        <div class="crud-card">
-
-            <h3>Update Category</h3>
-
-            <label for="update-category-id">
-                Category ID
-            </label>
-
-            <input
-                id="update-category-id"
-                type="text"
-                placeholder="UUID"
-            >
-
-
-            <label for="update-category-name">
-                New Name
-            </label>
-
-            <input
-                id="update-category-name"
-                type="text"
-                placeholder="New category name"
-            >
-
-
-            <label for="update-category-description">
-                New Description
-            </label>
-
-            <textarea
-                id="update-category-description"
-                placeholder="New category description"
-            ></textarea>
-
-
-            <button
-                onclick="updateCategory()"
-            >
-                Update Category
-            </button>
-
-        </div>
-
-
-        <!-- DELETE -->
-
-        <div class="crud-card">
-
-            <h3>Delete Category</h3>
-
-            <label for="delete-category-id">
-                Category ID
-            </label>
-
-            <input
-                id="delete-category-id"
-                type="text"
-                placeholder="UUID"
-            >
-
-            <button
-                class="danger-button"
-                onclick="deleteCategory()"
-            >
-                Delete Category
-            </button>
-
-        </div>
-
-
-        <!-- LIST -->
-
-        <div class="crud-card">
-
-            <div class="section-heading">
-
-                <h3>All Categories</h3>
-
-                <button
-                    onclick="loadCategories()"
-                >
-                    Refresh
-                </button>
-
-            </div>
-
-
-            <div
-                id="category-list"
-                class="record-list"
-            >
-                No categories loaded.
-            </div>
-
-        </div>
-
-    </section>
-
-
-    <!-- ========================= -->
-    <!-- PROMOTIONAL MEDIA         -->
-    <!-- ========================= -->
-
-    <section
-        id="media-section"
-        class="panel hidden"
-    >
-
-        <div class="section-heading">
-
-            <h2>Promotional Media</h2>
-
-            <button
-                class="secondary-button"
-                onclick="showMainMenu()"
-            >
-                Back
-            </button>
-
-        </div>
-
-        <p>
-            Promotional Media API integration
-            will be connected here.
-        </p>
-
-    </section>
-
-
-    <!-- ========================= -->
-    <!-- STATUS MESSAGE            -->
-    <!-- ========================= -->
 
     <div
-        id="message"
-        class="message hidden"
+        id="artist-result"
+        class="result"
     ></div>
 
-</main>
+</div>
+
+
+<!-- ===================================================== -->
+<!-- EVENTS                                                -->
+<!-- ===================================================== -->
+
+<div id="events-panel" class="panel">
+
+    <h2>Concert Events</h2>
+
+
+    <h3>Create New Event</h3>
+
+    <label>
+        Event Name
+    </label>
+
+    <input
+        id="event-create-name"
+        type="text"
+    >
+
+
+    <label>
+        Description
+    </label>
+
+    <textarea
+        id="event-create-description"
+    ></textarea>
+
+
+    <label>
+        Number of Tickets
+    </label>
+
+    <input
+        id="event-create-tickets"
+        type="number"
+        min="0"
+    >
+
+
+    <label>
+        Ticket Price
+    </label>
+
+    <input
+        id="event-create-price"
+        type="number"
+        min="0"
+        step="0.01"
+    >
+
+
+    <label>
+        Artist UUID
+    </label>
+
+    <input
+        id="event-create-artist"
+        type="text"
+    >
+
+
+    <label>
+        Category UUID
+    </label>
+
+    <input
+        id="event-create-category"
+        type="text"
+    >
+
+
+    <button onclick="eventNotConnected()">
+        Create Event
+    </button>
+
+
+    <hr>
+
+
+    <h3>Manage Existing Events</h3>
+
+    <label>
+        Event UUID
+    </label>
+
+    <input
+        id="event-id"
+        type="text"
+        placeholder="Enter event UUID"
+    >
+
+
+    <div class="button-row">
+
+        <button onclick="eventNotConnected()">
+            Read
+        </button>
+
+        <button
+            class="danger"
+            onclick="eventNotConnected()"
+        >
+            Delete
+        </button>
+
+    </div>
+
+
+    <label>
+        Event Name
+    </label>
+
+    <input
+        id="event-update-name"
+        type="text"
+    >
+
+
+    <label>
+        Description
+    </label>
+
+    <textarea
+        id="event-update-description"
+    ></textarea>
+
+
+    <label>
+        Number of Tickets
+    </label>
+
+    <input
+        id="event-update-tickets"
+        type="number"
+        min="0"
+    >
+
+
+    <label>
+        Ticket Price
+    </label>
+
+    <input
+        id="event-update-price"
+        type="number"
+        min="0"
+        step="0.01"
+    >
+
+
+    <button onclick="eventNotConnected()">
+        Update Event
+    </button>
+
+
+    <div
+        id="event-result"
+        class="result"
+    ></div>
+
+</div>
+
+
+<!-- ===================================================== -->
+<!-- CATEGORIES                                            -->
+<!-- ===================================================== -->
+
+<div id="categories-panel" class="panel">
+
+    <h2>Festival Booking Categories</h2>
+
+
+    <!-- CREATE -->
+
+    <h3>Create New Category</h3>
+
+    <label>
+        Category Name
+    </label>
+
+    <input
+        id="category-create-name"
+        type="text"
+    >
+
+
+    <label>
+        Description
+    </label>
+
+    <textarea
+        id="category-create-description"
+    ></textarea>
+
+
+    <button onclick="createCategory()">
+        Create Category
+    </button>
+
+
+    <hr>
+
+
+    <!-- MANAGE -->
+
+    <h3>Manage Existing Categories</h3>
+
+    <label>
+        Category UUID
+    </label>
+
+    <input
+        id="category-id"
+        type="text"
+        placeholder="Enter category UUID"
+    >
+
+
+    <div class="button-row">
+
+        <button onclick="readCategory()">
+            Read
+        </button>
+
+        <button
+            class="danger"
+            onclick="deleteCategory()"
+        >
+            Delete
+        </button>
+
+    </div>
+
+
+    <label>
+        Category Name
+    </label>
+
+    <input
+        id="category-update-name"
+        type="text"
+    >
+
+
+    <label>
+        Description
+    </label>
+
+    <textarea
+        id="category-update-description"
+    ></textarea>
+
+
+    <button onclick="updateCategory()">
+        Update Category
+    </button>
+
+
+    <div
+        id="category-result"
+        class="result"
+    ></div>
+
+
+    <hr>
+
+
+    <!-- LIST -->
+
+    <div class="heading-row">
+
+        <h3>All Categories</h3>
+
+        <button onclick="loadCategories()">
+            Refresh
+        </button>
+
+    </div>
+
+
+    <div
+        id="category-list"
+        class="record-list"
+    >
+        No categories loaded.
+    </div>
+
+</div>
+
+
+<!-- ===================================================== -->
+<!-- PROMOTIONAL MEDIA                                     -->
+<!-- ===================================================== -->
+
+<div id="media-panel" class="panel">
+
+    <h2>Promotional Media Management</h2>
+
+
+    <h3>Create New Media</h3>
+
+    <label>
+        Event UUID
+    </label>
+
+    <input
+        id="media-create-event-id"
+        type="text"
+    >
+
+
+    <label>
+        Image URL
+    </label>
+
+    <input
+        id="media-create-url"
+        type="text"
+    >
+
+
+    <button onclick="mediaNotConnected()">
+        Create Media
+    </button>
+
+
+    <hr>
+
+
+    <h3>Manage Existing Media</h3>
+
+    <label>
+        Media UUID
+    </label>
+
+    <input
+        id="media-id"
+        type="text"
+        placeholder="Enter media UUID"
+    >
+
+
+    <div class="button-row">
+
+        <button onclick="mediaNotConnected()">
+            Read
+        </button>
+
+        <button
+            class="danger"
+            onclick="mediaNotConnected()"
+        >
+            Delete
+        </button>
+
+    </div>
+
+
+    <label>
+        Event UUID
+    </label>
+
+    <input
+        id="media-update-event-id"
+        type="text"
+    >
+
+
+    <label>
+        Image URL
+    </label>
+
+    <input
+        id="media-update-url"
+        type="text"
+    >
+
+
+    <button onclick="mediaNotConnected()">
+        Update Media
+    </button>
+
+
+    <div
+        id="media-result"
+        class="result"
+    ></div>
+
+</div>
+
+
+<!-- ===================================================== -->
+<!-- GLOBAL MESSAGE                                        -->
+<!-- ===================================================== -->
+
+<div
+    id="message"
+    class="message hidden"
+></div>
 
 
 <script src="/js/app.js"></script>

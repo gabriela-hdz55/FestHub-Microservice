@@ -2,49 +2,40 @@
 // NAVIGATION
 // ============================================================
 
-function hideAllSections() {
+function showPanel(panelId) {
 
     document
-        .querySelectorAll("main > section")
-        .forEach(section => {
-            section.classList.add("hidden");
+        .querySelectorAll(".panel")
+        .forEach(panel => {
+            panel.classList.remove("active");
         });
-}
 
 
-function showMainMenu() {
-
-    hideAllSections();
-
-    document
-        .getElementById("main-menu")
-        .classList.remove("hidden");
-}
+    const panel =
+        document.getElementById(panelId);
 
 
-function showSection(sectionId) {
-
-    hideAllSections();
-
-    document
-        .getElementById(sectionId)
-        .classList.remove("hidden");
+    panel.classList.add("active");
 
 
-    if (sectionId === "categories-section") {
+    if (panelId === "categories-panel") {
         loadCategories();
     }
 }
 
 
 // ============================================================
-// MESSAGE DISPLAY
+// STATUS MESSAGES
 // ============================================================
 
-function showMessage(text, type = "success") {
+function showMessage(
+    text,
+    type = "success"
+) {
 
     const message =
         document.getElementById("message");
+
 
     message.textContent = text;
 
@@ -52,16 +43,17 @@ function showMessage(text, type = "success") {
         "message " + type;
 
 
-    setTimeout(() => {
-
-        message.classList.add("hidden");
-
-    }, 4000);
+    setTimeout(
+        () => {
+            message.classList.add("hidden");
+        },
+        4000
+    );
 }
 
 
 // ============================================================
-// CREATE CATEGORY
+// CATEGORY CREATE
 // ============================================================
 
 async function createCategory() {
@@ -69,7 +61,7 @@ async function createCategory() {
     const name =
         document
             .getElementById(
-                "create-category-name"
+                "category-create-name"
             )
             .value
             .trim();
@@ -78,7 +70,7 @@ async function createCategory() {
     const description =
         document
             .getElementById(
-                "create-category-description"
+                "category-create-description"
             )
             .value
             .trim();
@@ -129,21 +121,21 @@ async function createCategory() {
 
 
         showMessage(
-            "Category created: "
+            "Created category: "
             + category.name
         );
 
 
         document
             .getElementById(
-                "create-category-name"
+                "category-create-name"
             )
             .value = "";
 
 
         document
             .getElementById(
-                "create-category-description"
+                "category-create-description"
             )
             .value = "";
 
@@ -152,18 +144,13 @@ async function createCategory() {
 
     } catch (error) {
 
-        showMessage(
-            "Could not contact FestHub.",
-            "error"
-        );
-
-        console.error(error);
+        connectionFailure(error);
     }
 }
 
 
 // ============================================================
-// READ CATEGORY
+// CATEGORY READ
 // ============================================================
 
 async function readCategory() {
@@ -171,22 +158,16 @@ async function readCategory() {
     const id =
         document
             .getElementById(
-                "read-category-id"
+                "category-id"
             )
             .value
             .trim();
 
 
-    const result =
-        document.getElementById(
-            "read-category-result"
-        );
-
-
     if (!id) {
 
         showMessage(
-            "Enter a category ID.",
+            "Enter a category UUID.",
             "error"
         );
 
@@ -205,8 +186,6 @@ async function readCategory() {
 
         if (!response.ok) {
 
-            result.innerHTML = "";
-
             await handleError(response);
 
             return;
@@ -217,24 +196,39 @@ async function readCategory() {
             await response.json();
 
 
-        result.innerHTML =
-            categoryCard(category);
+        document
+            .getElementById(
+                "category-update-name"
+            )
+            .value =
+                category.name;
+
+
+        document
+            .getElementById(
+                "category-update-description"
+            )
+            .value =
+                category.description;
+
+
+        document
+            .getElementById(
+                "category-result"
+            )
+            .innerHTML =
+                categoryCard(category);
 
 
     } catch (error) {
 
-        showMessage(
-            "Could not contact FestHub.",
-            "error"
-        );
-
-        console.error(error);
+        connectionFailure(error);
     }
 }
 
 
 // ============================================================
-// UPDATE CATEGORY
+// CATEGORY UPDATE
 // ============================================================
 
 async function updateCategory() {
@@ -242,7 +236,7 @@ async function updateCategory() {
     const id =
         document
             .getElementById(
-                "update-category-id"
+                "category-id"
             )
             .value
             .trim();
@@ -251,7 +245,7 @@ async function updateCategory() {
     const name =
         document
             .getElementById(
-                "update-category-name"
+                "category-update-name"
             )
             .value
             .trim();
@@ -260,7 +254,7 @@ async function updateCategory() {
     const description =
         document
             .getElementById(
-                "update-category-description"
+                "category-update-description"
             )
             .value
             .trim();
@@ -269,7 +263,7 @@ async function updateCategory() {
     if (!id || !name || !description) {
 
         showMessage(
-            "ID, name, and description are required.",
+            "UUID, name, and description are required.",
             "error"
         );
 
@@ -312,27 +306,30 @@ async function updateCategory() {
 
 
         showMessage(
-            "Category updated: "
+            "Updated category: "
             + category.name
         );
+
+
+        document
+            .getElementById(
+                "category-result"
+            )
+            .innerHTML =
+                categoryCard(category);
 
 
         loadCategories();
 
     } catch (error) {
 
-        showMessage(
-            "Could not contact FestHub.",
-            "error"
-        );
-
-        console.error(error);
+        connectionFailure(error);
     }
 }
 
 
 // ============================================================
-// DELETE CATEGORY
+// CATEGORY DELETE
 // ============================================================
 
 async function deleteCategory() {
@@ -340,7 +337,7 @@ async function deleteCategory() {
     const id =
         document
             .getElementById(
-                "delete-category-id"
+                "category-id"
             )
             .value
             .trim();
@@ -349,7 +346,7 @@ async function deleteCategory() {
     if (!id) {
 
         showMessage(
-            "Enter a category ID.",
+            "Enter a category UUID.",
             "error"
         );
 
@@ -359,7 +356,7 @@ async function deleteCategory() {
 
     const confirmed =
         window.confirm(
-            "Delete this festival category?"
+            "Delete this category?"
         );
 
 
@@ -389,33 +386,49 @@ async function deleteCategory() {
 
 
         showMessage(
-            "Category deleted successfully."
+            "Category deleted."
         );
 
 
         document
             .getElementById(
-                "delete-category-id"
+                "category-id"
             )
             .value = "";
+
+
+        document
+            .getElementById(
+                "category-update-name"
+            )
+            .value = "";
+
+
+        document
+            .getElementById(
+                "category-update-description"
+            )
+            .value = "";
+
+
+        document
+            .getElementById(
+                "category-result"
+            )
+            .innerHTML = "";
 
 
         loadCategories();
 
     } catch (error) {
 
-        showMessage(
-            "Could not contact FestHub.",
-            "error"
-        );
-
-        console.error(error);
+        connectionFailure(error);
     }
 }
 
 
 // ============================================================
-// LIST CATEGORIES
+// CATEGORY LIST
 // ============================================================
 
 async function loadCategories() {
@@ -453,10 +466,11 @@ async function loadCategories() {
             await response.json();
 
 
-        if (categories.length === 0) {
+        if (!Array.isArray(categories)
+            || categories.length === 0) {
 
             list.innerHTML =
-                "<p>No festival categories found.</p>";
+                "No categories found.";
 
             return;
         }
@@ -473,12 +487,7 @@ async function loadCategories() {
         list.innerHTML =
             "Unable to connect to FestHub.";
 
-        showMessage(
-            "Could not contact FestHub.",
-            "error"
-        );
-
-        console.error(error);
+        connectionFailure(error);
     }
 }
 
@@ -501,7 +510,7 @@ function categoryCard(category) {
             </p>
 
             <small>
-                ID:
+                UUID:
                 ${escapeHtml(category.id)}
             </small>
 
@@ -511,7 +520,7 @@ function categoryCard(category) {
 
 
 // ============================================================
-// API ERROR HANDLING
+// API ERRORS
 // ============================================================
 
 async function handleError(response) {
@@ -533,7 +542,7 @@ async function handleError(response) {
 
     } catch (error) {
 
-        // Response may not contain JSON.
+        // Response was not JSON.
     }
 
 
@@ -544,17 +553,62 @@ async function handleError(response) {
 }
 
 
+function connectionFailure(error) {
+
+    console.error(error);
+
+
+    showMessage(
+        "Could not contact FestHub.",
+        "error"
+    );
+}
+
+
 // ============================================================
-// BASIC HTML ESCAPING
+// HTML SAFETY
 // ============================================================
 
 function escapeHtml(value) {
 
-    const element =
+    const div =
         document.createElement("div");
 
-    element.textContent =
+
+    div.textContent =
         value ?? "";
 
-    return element.innerHTML;
+
+    return div.innerHTML;
+}
+
+
+// ============================================================
+// UNCONNECTED TEAM SERVICES
+// ============================================================
+
+function artistNotConnected() {
+
+    showMessage(
+        "Artist service has not been connected to the client yet.",
+        "error"
+    );
+}
+
+
+function eventNotConnected() {
+
+    showMessage(
+        "Concert Event service has not been connected to the client yet.",
+        "error"
+    );
+}
+
+
+function mediaNotConnected() {
+
+    showMessage(
+        "Promotional Media service has not been connected to the client yet.",
+        "error"
+    );
 }
