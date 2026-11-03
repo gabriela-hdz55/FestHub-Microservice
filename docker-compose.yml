@@ -4,103 +4,204 @@ x-postgres-health: &pg-health
   timeout: 3s
   retries: 10
 
+
 services:
-  # ---------- Databases ----------
+
+  # ============================================================
+  # Databases
+  # ============================================================
+
   artist-db:
     image: postgres:17
-    ports: ["127.0.0.1:5433:5432"]
+
+    ports:
+      - "127.0.0.1:5433:5432"
+
     environment:
       POSTGRES_DB: artistdb
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
-    volumes: [artist-db-data:/var/lib/postgresql/data]
+
+    volumes:
+      - artist-db-data:/var/lib/postgresql/data
+
     healthcheck: *pg-health
+
 
   category-db:
     image: postgres:17
-    ports: ["127.0.0.1:5434:5432"]
+
+    ports:
+      - "127.0.0.1:5434:5432"
+
     environment:
       POSTGRES_DB: categorydb
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
-    volumes: [category-db-data:/var/lib/postgresql/data]
+
+    volumes:
+      - category-db-data:/var/lib/postgresql/data
+
     healthcheck: *pg-health
+
 
   event-db:
     image: postgres:17
-    ports: ["127.0.0.1:5435:5432"]
+
+    ports:
+      - "127.0.0.1:5435:5432"
+
     environment:
       POSTGRES_DB: eventdb
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
-    volumes: [event-db-data:/var/lib/postgresql/data]
+
+    volumes:
+      - event-db-data:/var/lib/postgresql/data
+
     healthcheck: *pg-health
+
 
   media-db:
     image: postgres:17
-    ports: ["127.0.0.1:5436:5432"]
+
+    ports:
+      - "127.0.0.1:5436:5432"
+
     environment:
       POSTGRES_DB: mediadb
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
-    volumes: [media-db-data:/var/lib/postgresql/data]
+
+    volumes:
+      - media-db-data:/var/lib/postgresql/data
+
     healthcheck: *pg-health
 
-  # ---------- Services ----------
+
+  # ============================================================
+  # Microservices
+  # ============================================================
+
   artist:
     build: ./artist
-    ports: ["127.0.0.1:8081:8080"]
+
+    ports:
+      - "127.0.0.1:8081:8080"
+
     environment:
       DB_URL: jdbc:postgresql://artist-db:5432/artistdb
       DB_USER: ${DB_USER}
       DB_PASSWORD: ${DB_PASSWORD}
+
     depends_on:
-      artist-db: { condition: service_healthy }
+      artist-db:
+        condition: service_healthy
+
 
   booking-category:
     build: ./booking-category
-    ports: ["127.0.0.1:8082:8080"]
+
+    ports:
+      - "127.0.0.1:8082:8080"
+
     environment:
       DB_URL: jdbc:postgresql://category-db:5432/categorydb
       DB_USER: ${DB_USER}
       DB_PASSWORD: ${DB_PASSWORD}
+
     depends_on:
-      category-db: { condition: service_healthy }
+      category-db:
+        condition: service_healthy
+
 
   concert-event:
     build: ./concert-event
-    ports: ["127.0.0.1:8083:8080"]
+
+    ports:
+      - "127.0.0.1:8083:8080"
+
     environment:
       DB_URL: jdbc:postgresql://event-db:5432/eventdb
       DB_USER: ${DB_USER}
       DB_PASSWORD: ${DB_PASSWORD}
+
     depends_on:
-      event-db: { condition: service_healthy }
+      event-db:
+        condition: service_healthy
+
 
   promo-media:
     build: ./promo-media
-    ports: ["127.0.0.1:8084:8080"]
+
+    ports:
+      - "127.0.0.1:8084:8080"
+
     environment:
       DB_URL: jdbc:postgresql://media-db:5432/mediadb
       DB_USER: ${DB_USER}
       DB_PASSWORD: ${DB_PASSWORD}
-    depends_on:
-      media-db: { condition: service_healthy }
 
-  # ---------- Edge ----------
-  gateway:
-    build: ./gateway
-    ports: ["8080:8080"]
-    depends_on: [artist, booking-category, concert-event, promo-media]
+    depends_on:
+      media-db:
+        condition: service_healthy
+
+
+  # ============================================================
+  # Web Client
+  #
+  # Internal only.
+  # The browser does NOT connect directly to this container.
+  # Gateway forwards "/" requests to http://client:80.
+  # ============================================================
 
   client:
     build:
       context: .
       dockerfile: client/Dockerfile
-    ports: [ "80:80" ]
+
+
+  # ============================================================
+  # API Gateway
+  #
+  # Single public entry point for:
+  #
+  #   Browser -> localhost:8080
+  #   CLI     -> localhost:8080
+  #
+  # Internally:
+  #
+  #   /api/artist/**   -> artist
+  #   /api/category/** -> booking-category
+  #   /api/events/**   -> concert-event
+  #   /api/media/**    -> promo-media
+  #   /**              -> client
+  # ============================================================
+
+  gateway:
+    build: ./gateway
+
+    ports:
+      - "8080:8080"
+
     environment:
-      API_URL: http://localhost
-    depends_on: [ gateway ]
+      ARTIST_SERVICE_URL: http://artist:8080
+      BOOKING_CATEGORY_SERVICE_URL: http://booking-category:8080
+      CONCERT_EVENT_SERVICE_URL: http://concert-event:8080
+      PROMO_MEDIA_SERVICE_URL: http://promo-media:8080
+      CLIENT_URL: http://client:80
+
+    depends_on:
+      - artist
+      - booking-category
+      - concert-event
+      - promo-media
+      - client
+
+
+# ==============================================================
+# Persistent PostgreSQL volumes
+# ==============================================================
 
 volumes:
   artist-db-data:
