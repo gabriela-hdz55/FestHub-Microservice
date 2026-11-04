@@ -30,6 +30,11 @@ public class ArtistController {
         return ResponseEntity.ok(service.createArtist(newArtist));
     }
 
+    @GetMapping("/list")
+    public Iterable<Artist> listArtists() {
+        return service.listArtists();
+    }
+
     @GetMapping("/read")
     public ResponseEntity<Artist> getArtist(@RequestParam UUID id) {
         return ResponseEntity.ok(service.getArtist(id));

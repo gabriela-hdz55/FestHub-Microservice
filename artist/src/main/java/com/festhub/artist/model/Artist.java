@@ -14,9 +14,8 @@ import jakarta.persistence.Table;
 public class Artist {
 
     @Id
-    private UUID id;
-
     @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
     @Column(nullable = false)
     private String name;

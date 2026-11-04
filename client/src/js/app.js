@@ -818,91 +818,67 @@ function escapeHtml(value) {
     // ============================================================
 
 async function createArtist() {
-
-    const name =
-        document
-            .getElementById(
-                "artist-create-name"
-            )
-            .value
-            .trim();
-
-
-    const bookingContact =
-        document
-            .getElementById(
-                "artist-create-contact"
-            )
-            .value
-            .trim();
-
+    const name = document.getElementById("artist-create-name").value.trim();
+    const bookingContact = document.getElementById("artist-create-contact").value.trim();
 
     if (!name || !bookingContact) {
-
-        showMessage(
-            "Name and booking contact are required.",
-            "error"
-        );
-
+        showMessage("Name and booking contact are required.", "error");
         return;
     }
 
-
     try {
-
-        // Maps to @PostMapping("/create")
-        const response =
-            await fetch(
-                "/api/artist/create",
-                {
-                    method: "POST",
-
-                    headers: {
-                        "Content-Type":
-                            "application/json"
-                    },
-
-                    body: JSON.stringify({
-                        name: name,
-                        bookingContact: bookingContact
-                    })
-                }
-            );
-
+        const response = await fetch("/api/artist/create", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name: name, bookingContact: bookingContact })
+        });
 
         if (!response.ok) {
-
             await handleError(response);
-
             return;
         }
 
+        const artist = await response.json();
+        showMessage("Created artist: " + artist.name);
 
-        const artist =
-            await response.json();
-
-
-        showMessage(
-            "Created artist: "
-            + artist.name
-        );
-
-
-        document
-            .getElementById(
-                "artist-create-name"
-            )
-            .value = "";
-
-
-        document
-            .getElementById(
-                "artist-create-contact"
-            )
-            .value = "";
-
+        // Immediately displays the UUID on screen after creation
+        document.getElementById("artist-result").innerHTML = artistCard(artist);
+        document.getElementById("artist-create-name").value = "";
+        document.getElementById("artist-create-contact").value = "";
+        
+        // Auto-refreshes the list at the bottom
+        if (typeof loadArtists === 'function') {
+            loadArtists();
+        }
     } catch (error) {
+        connectionFailure(error);
+    }
+}
 
+// loading created artists for display
+async function loadArtists() {
+    const list = document.getElementById("artist-list");
+    list.innerHTML = "Loading...";
+    
+    try {
+        const response = await fetch("/api/artist/list");
+        
+        if (!response.ok) {
+            list.innerHTML = "Unable to load artists.";
+            await handleError(response);
+            return;
+        }
+        
+        const artists = await response.json();
+        
+        if (!Array.isArray(artists) || artists.length === 0) {
+            list.innerHTML = "No artists found.";
+            return;
+        }
+        
+        list.innerHTML = artists.map(artistCard).join("");
+    } catch (error) {
+        list.innerHTML = "Unable to connect to FestHub.";
         connectionFailure(error);
     }
 }

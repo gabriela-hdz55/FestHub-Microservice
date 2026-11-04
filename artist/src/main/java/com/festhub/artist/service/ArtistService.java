@@ -24,6 +24,10 @@ public class ArtistService {
         return repository.save(artist);
     }
 
+    public Iterable<Artist> listArtists() {
+        return repository.findAll(); 
+    }
+
     public Artist getArtist(UUID id) {
         return repository.findById(id)
                 .orElseThrow(() -> new ArtistNotFoundException(id));
