@@ -813,6 +813,402 @@ function escapeHtml(value) {
 // UNCONNECTED TEAM SERVICES
 // ============================================================
 
+    // ============================================================
+    // ARTIST CREATE
+    // ============================================================
+
+async function createArtist() {
+
+    const name =
+        document
+            .getElementById(
+                "artist-create-name"
+            )
+            .value
+            .trim();
+
+
+    const bookingContact =
+        document
+            .getElementById(
+                "artist-create-contact"
+            )
+            .value
+            .trim();
+
+
+    if (!name || !bookingContact) {
+
+        showMessage(
+            "Name and booking contact are required.",
+            "error"
+        );
+
+        return;
+    }
+
+
+    try {
+
+        // Maps to @PostMapping("/create")
+        const response =
+            await fetch(
+                "/api/artist/create",
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body: JSON.stringify({
+                        name: name,
+                        bookingContact: bookingContact
+                    })
+                }
+            );
+
+
+        if (!response.ok) {
+
+            await handleError(response);
+
+            return;
+        }
+
+
+        const artist =
+            await response.json();
+
+
+        showMessage(
+            "Created artist: "
+            + artist.name
+        );
+
+
+        document
+            .getElementById(
+                "artist-create-name"
+            )
+            .value = "";
+
+
+        document
+            .getElementById(
+                "artist-create-contact"
+            )
+            .value = "";
+
+    } catch (error) {
+
+        connectionFailure(error);
+    }
+}
+
+
+// ============================================================
+// ARTIST READ
+// ============================================================
+
+async function readArtist() {
+
+    const id =
+        document
+            .getElementById(
+                "artist-id"
+            )
+            .value
+            .trim();
+
+
+    if (!id) {
+
+        showMessage(
+            "Enter an artist UUID.",
+            "error"
+        );
+
+        return;
+    }
+
+
+    try {
+
+        // Maps to @GetMapping("/read?id=...")
+        const response =
+            await fetch(
+                "/api/artist/read?id="
+                + encodeURIComponent(id)
+            );
+
+
+        if (!response.ok) {
+
+            await handleError(response);
+
+            return;
+        }
+
+
+        const artist =
+            await response.json();
+
+
+        document
+            .getElementById(
+                "artist-update-name"
+            )
+            .value =
+                artist.name;
+
+
+        document
+            .getElementById(
+                "artist-update-contact"
+            )
+            .value =
+                artist.bookingContact;
+
+
+        document
+            .getElementById(
+                "artist-result"
+            )
+            .innerHTML =
+                artistCard(artist);
+
+
+    } catch (error) {
+
+        connectionFailure(error);
+    }
+}
+
+
+// ============================================================
+// ARTIST UPDATE
+// ============================================================
+
+async function updateArtist() {
+
+    const id =
+        document
+            .getElementById(
+                "artist-id"
+            )
+            .value
+            .trim();
+
+
+    const name =
+        document
+            .getElementById(
+                "artist-update-name"
+            )
+            .value
+            .trim();
+
+
+    const bookingContact =
+        document
+            .getElementById(
+                "artist-update-contact"
+            )
+            .value
+            .trim();
+
+
+    if (!id || !name || !bookingContact) {
+
+        showMessage(
+            "UUID, name, and booking contact are required.",
+            "error"
+        );
+
+        return;
+    }
+
+
+    try {
+
+        // Maps to @PostMapping("/update") with ID in body
+        const response =
+            await fetch(
+                "/api/artist/update",
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body: JSON.stringify({
+                        id: id,
+                        name: name,
+                        bookingContact: bookingContact
+                    })
+                }
+            );
+
+
+        if (!response.ok) {
+
+            await handleError(response);
+
+            return;
+        }
+
+
+        const artist =
+            await response.json();
+
+
+        showMessage(
+            "Updated artist: "
+            + artist.name
+        );
+
+
+        document
+            .getElementById(
+                "artist-result"
+            )
+            .innerHTML =
+                artistCard(artist);
+
+    } catch (error) {
+
+        connectionFailure(error);
+    }
+}
+
+
+// ============================================================
+// ARTIST DELETE
+// ============================================================
+
+async function deleteArtist() {
+
+    const id =
+        document
+            .getElementById(
+                "artist-id"
+            )
+            .value
+            .trim();
+
+
+    if (!id) {
+
+        showMessage(
+            "Enter an artist UUID.",
+            "error"
+        );
+
+        return;
+    }
+
+
+    const confirmed =
+        window.confirm(
+            "Delete this artist?"
+        );
+
+
+    if (!confirmed) {
+        return;
+    }
+
+
+    try {
+
+        // Maps to @DeleteMapping("/delete?id=...")
+        const response =
+            await fetch(
+                "/api/artist/delete?id="
+                + encodeURIComponent(id),
+                {
+                    method: "DELETE"
+                }
+            );
+
+
+        if (!response.ok) {
+
+            await handleError(response);
+
+            return;
+        }
+
+
+        showMessage(
+            "Artist deleted."
+        );
+
+
+        document
+            .getElementById(
+                "artist-id"
+            )
+            .value = "";
+
+
+        document
+            .getElementById(
+                "artist-update-name"
+            )
+            .value = "";
+
+
+        document
+            .getElementById(
+                "artist-update-contact"
+            )
+            .value = "";
+
+
+        document
+            .getElementById(
+                "artist-result"
+            )
+            .innerHTML = "";
+
+    } catch (error) {
+
+        connectionFailure(error);
+    }
+}
+
+
+// ============================================================
+// ARTIST DISPLAY
+// ============================================================
+
+function artistCard(artist) {
+
+    return `
+        <div class="record-card">
+
+            <h4>
+                ${escapeHtml(artist.name)}
+            </h4>
+
+            <p>
+                Booking Contact: ${escapeHtml(artist.bookingContact)}
+            </p>
+
+            <small>
+                UUID:
+                ${escapeHtml(artist.id)}
+            </small>
+
+        </div>
+    `;
+}
+
 function artistNotConnected() {
 
     showMessage(
