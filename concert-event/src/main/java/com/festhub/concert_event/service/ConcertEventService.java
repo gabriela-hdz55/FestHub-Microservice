@@ -125,6 +125,16 @@ public class ConcertEventService {
         repository.delete(event);
     }
 
+    @Transactional(readOnly = true)
+    public List<UUID> getEventIdsForArtist(UUID artistId) {
+        return repository.findEventIdsByArtistId(artistId);
+    }
+
+    @Transactional(readOnly = true)
+    public List<UUID> getEventIdsForCategory(UUID categoryId) {
+        return repository.findEventIdsByCategoryId(categoryId);
+    }
+
     private ConcertEvent findEvent(UUID id) {
         if (id == null) {
             throw new IllegalArgumentException(
@@ -222,7 +232,7 @@ public class ConcertEventService {
         if (name.length() > MAX_NAME_LENGTH) {
             throw new IllegalArgumentException(
                     "Concert event name cannot exceed "
-                            + MAX_NAME_LENGTH 
+                            + MAX_NAME_LENGTH
                             + " characters");
         }
 
@@ -234,7 +244,7 @@ public class ConcertEventService {
         if (description.length() > MAX_DESCRIPTION_LENGTH) {
             throw new IllegalArgumentException(
                     "Concert event description cannot exceed "
-                            + MAX_DESCRIPTION_LENGTH 
+                            + MAX_DESCRIPTION_LENGTH
                             + " characters");
         }
 
@@ -252,7 +262,7 @@ public class ConcertEventService {
 
             throw new IllegalArgumentException(
                     "Sold-out concert event ticket price cannot exceed "
-                            + MAX_SOLD_OUT_PRICE_CENTS 
+                            + MAX_SOLD_OUT_PRICE_CENTS
                             + " cents");
         }
     }

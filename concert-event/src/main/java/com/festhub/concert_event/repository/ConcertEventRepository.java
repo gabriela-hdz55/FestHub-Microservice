@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.UUID;
+import java.util.List;
 
 public interface ConcertEventRepository
         extends JpaRepository<ConcertEvent, UUID> {
@@ -34,4 +35,22 @@ public interface ConcertEventRepository
     long sumOtherEventTicketPrices(
             @Param("artistId") UUID artistId,
             @Param("eventId") UUID eventId);
+
+    @Query(value = """
+            SELECT event_id
+            FROM event_artist
+            WHERE artist_id = :artistId
+            ORDER BY event_id
+            """, nativeQuery = true)
+    List<UUID> findEventIdsByArtistId(
+            @Param("artistId") UUID artistId);
+
+    @Query(value = """
+            SELECT event_id
+            FROM event_category
+            WHERE category_id = :categoryId
+            ORDER BY event_id
+            """, nativeQuery = true)
+    List<UUID> findEventIdsByCategoryId(
+            @Param("categoryId") UUID categoryId);
 }

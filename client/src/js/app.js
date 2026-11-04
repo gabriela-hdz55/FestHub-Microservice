@@ -21,6 +21,10 @@ function showPanel(panelId) {
     if (panelId === "categories-panel") {
         loadCategories();
     }
+
+    if (panelId === "events-panel") {
+        loadEvents();
+    }
 }
 
 
@@ -201,7 +205,7 @@ async function readCategory() {
                 "category-update-name"
             )
             .value =
-                category.name;
+            category.name;
 
 
         document
@@ -209,7 +213,7 @@ async function readCategory() {
                 "category-update-description"
             )
             .value =
-                category.description;
+            category.description;
 
 
         document
@@ -217,7 +221,7 @@ async function readCategory() {
                 "category-result"
             )
             .innerHTML =
-                categoryCard(category);
+            categoryCard(category);
 
 
     } catch (error) {
@@ -316,7 +320,7 @@ async function updateCategory() {
                 "category-result"
             )
             .innerHTML =
-                categoryCard(category);
+            categoryCard(category);
 
 
         loadCategories();
@@ -582,6 +586,296 @@ function escapeHtml(value) {
     return div.innerHTML;
 }
 
+// ============================================================
+// EVENT CREATE
+// ============================================================
+async function createConcertEvent() {
+    const value = id =>
+        document.getElementById(id).value.trim();
+
+    const parseIds = text =>
+        text.split(",").map(id => id.trim()).filter(Boolean);
+
+    const ticketsText = value("event-create-tickets");
+    const priceText = value("event-create-price");
+
+    const availableTickets = Number(ticketsText);
+    const price = Number(priceText);
+    const ticketPriceCents = Math.round(price * 100);
+
+    if (
+        !ticketsText ||
+        !Number.isSafeInteger(availableTickets) ||
+        availableTickets < 0 ||
+        !priceText ||
+        !Number.isFinite(price) ||
+        price <= 0 ||
+        !Number.isSafeInteger(ticketPriceCents)
+    ) {
+        showMessage("Enter valid tickets and a positive price.", "error");
+        return;
+    }
+
+    try {
+        const response = await fetch("/api/events", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                name: value("event-create-name"),
+                description: value("event-create-description"),
+                availableTickets,
+                ticketPriceCents,
+                artistIds: parseIds(value("event-create-artist")),
+                categoryIds: parseIds(value("event-create-category"))
+            })
+        });
+
+        if (!response.ok) {
+            await handleError(response);
+            return;
+        }
+
+        const event = await response.json();
+
+        showMessage("Created event: " + event.name);
+
+        [
+            "event-create-name",
+            "event-create-description",
+            "event-create-tickets",
+            "event-create-price",
+            "event-create-artist",
+            "event-create-category"
+        ].forEach(id => {
+            document.getElementById(id).value = "";
+        });
+    } catch (error) {
+        connectionFailure(error);
+    }
+}
+
+function eventCard(event) {
+    return `
+        <div class="record-card">
+            <h4>${escapeHtml(event.name)}</h4>
+
+            <p>${escapeHtml(event.description)}</p>
+
+            <p>
+                Available tickets:
+                ${escapeHtml(String(event.availableTickets))}
+            </p>
+
+            <p>
+                Ticket price:
+                $${(event.ticketPriceCents / 100).toFixed(2)}
+            </p>
+
+            <p>
+                Artist UUIDs:
+                ${escapeHtml((event.artistIds ?? []).join(", ") || "None")}
+            </p>
+
+            <p>
+                Category UUIDs:
+                ${escapeHtml((event.categoryIds ?? []).join(", ") || "None")}
+            </p>
+
+            <small>UUID: ${escapeHtml(event.id)}</small>
+        </div>
+    `;
+}
+
+function displayEvent(event) {
+    document.getElementById("event-id").value = event.id;
+    document.getElementById("event-update-name").value = event.name;
+    document.getElementById("event-update-description").value =
+        event.description;
+    document.getElementById("event-update-tickets").value =
+        event.availableTickets;
+    document.getElementById("event-update-price").value =
+        (event.ticketPriceCents / 100).toFixed(2);
+
+    document.getElementById("event-update-artists").value =
+        (event.artistIds ?? []).join(", ");
+    document.getElementById("event-update-categories").value =
+        (event.categoryIds ?? []).join(", ");
+
+    const result = document.getElementById("event-result");
+    result.style.whiteSpace = "";
+    result.innerHTML = eventCard(event);
+}
+
+async function readConcertEvent() {
+    const id = document.getElementById("event-id").value.trim();
+
+    if (!id) {
+        showMessage("Enter an event UUID.", "error");
+        return;
+    }
+
+    try {
+        const response = await fetch(
+            "/api/events/" + encodeURIComponent(id)
+        );
+
+        if (!response.ok) {
+            await handleError(response);
+            return;
+        }
+
+        displayEvent(await response.json());
+    } catch (error) {
+        connectionFailure(error);
+    }
+}
+
+async function updateConcertEvent() {
+    const value = id =>
+        document.getElementById(id).value.trim();
+
+    const parseIds = text =>
+        text.split(",").map(id => id.trim()).filter(Boolean);
+
+    const id = value("event-id");
+    const name = value("event-update-name");
+    const description = value("event-update-description");
+    const ticketsText = value("event-update-tickets");
+    const priceText = value("event-update-price");
+
+    const availableTickets = Number(ticketsText);
+    const price = Number(priceText);
+    const ticketPriceCents = Math.round(price * 100);
+
+    if (!id || !name || !description) {
+        showMessage(
+            "Event UUID, name, and description are required.",
+            "error"
+        );
+        return;
+    }
+
+    if (
+        !ticketsText ||
+        !Number.isSafeInteger(availableTickets) ||
+        availableTickets < 0 ||
+        !priceText ||
+        !Number.isFinite(price) ||
+        price <= 0 ||
+        !Number.isSafeInteger(ticketPriceCents)
+    ) {
+        showMessage(
+            "Enter valid tickets and a positive price.",
+            "error"
+        );
+        return;
+    }
+
+    try {
+        const response = await fetch(
+            "/api/events/" + encodeURIComponent(id),
+            {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    name,
+                    description,
+                    availableTickets,
+                    ticketPriceCents,
+                    artistIds: parseIds(
+                        value("event-update-artists")
+                    ),
+                    categoryIds: parseIds(
+                        value("event-update-categories")
+                    )
+                })
+            }
+        );
+
+        if (!response.ok) {
+            await handleError(response);
+            return;
+        }
+
+        displayEvent(await response.json());
+        showMessage("Event updated.");
+    } catch (error) {
+        connectionFailure(error);
+    }
+}
+
+async function deleteConcertEvent() {
+    const id = document.getElementById("event-id").value.trim();
+
+    if (!id) {
+        showMessage("Enter an event UUID.", "error");
+        return;
+    }
+
+    if (!window.confirm("Delete this event?")) {
+        return;
+    }
+
+    try {
+        const response = await fetch(
+            "/api/events/" + encodeURIComponent(id),
+            { method: "DELETE" }
+        );
+
+        if (!response.ok) {
+            await handleError(response);
+            return;
+        }
+
+        [
+            "event-id",
+            "event-update-name",
+            "event-update-description",
+            "event-update-tickets",
+            "event-update-price",
+            "event-update-artists",
+            "event-update-categories"
+        ].forEach(fieldId => {
+            document.getElementById(fieldId).value = "";
+        });
+
+        document.getElementById("event-result").textContent = "";
+        showMessage("Event deleted.");
+    } catch (error) {
+        connectionFailure(error);
+    }
+}
+
+async function loadEvents() {
+    const list = document.getElementById("event-list");
+    list.textContent = "Loading...";
+
+    try {
+        const response = await fetch("/api/events");
+
+        if (!response.ok) {
+            list.textContent = "Unable to load events.";
+            await handleError(response);
+            return;
+        }
+
+        const events = await response.json();
+
+        if (events.length === 0) {
+            list.textContent = "No events found.";
+            return;
+        }
+
+        list.innerHTML = events.map(eventCard).join("");
+    } catch (error) {
+        list.textContent = "Unable to connect to FestHub.";
+        connectionFailure(error);
+    }
+}
 
 // ============================================================
 // UNCONNECTED TEAM SERVICES

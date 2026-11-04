@@ -68,4 +68,18 @@ public class ConcertEventController {
     public List<ConcertEvent> getAll() {
         return service.getAll();
     }
+
+    @GetMapping("/by-artist/{artistId}/ids")
+    public List<UUID> getEventIdsForArtist(
+            @PathVariable UUID artistId) {
+
+        return service.getEventIdsForArtist(artistId);
+    }
+
+    @GetMapping("/by-category/{categoryId}/ids")
+    public List<UUID> getEventIdsForCategory(
+            @PathVariable UUID categoryId) {
+
+        return service.getEventIdsForCategory(categoryId);
+    }
 }
