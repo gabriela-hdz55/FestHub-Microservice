@@ -30,7 +30,9 @@ public class ConcertEventController {
                 request.name(),
                 request.description(),
                 request.availableTickets(),
-                request.ticketPriceCents());
+                request.ticketPriceCents(),
+                request.artistIds(),
+                request.categoryIds());
 
         return ResponseEntity.status(201).body(event);
     }
