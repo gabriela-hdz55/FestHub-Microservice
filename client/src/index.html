@@ -469,7 +469,7 @@
     >
 
 
-    <button onclick="mediaNotConnected()">
+    <button onclick="createMedia()">
         Create Media
     </button>
 
@@ -492,13 +492,13 @@
 
     <div class="button-row">
 
-        <button onclick="mediaNotConnected()">
+        <button onclick="readMedia()">
             Read
         </button>
 
         <button
             class="danger"
-            onclick="mediaNotConnected()"
+            onclick="deleteMedia()"
         >
             Delete
         </button>
@@ -526,7 +526,7 @@
     >
 
 
-    <button onclick="mediaNotConnected()">
+    <button onclick="updateMedia()">
         Update Media
     </button>
 
@@ -535,6 +535,28 @@
         id="media-result"
         class="result"
     ></div>
+
+
+    <hr>
+
+
+    <div class="heading-row">
+
+        <h3>All Promotional Media</h3>
+
+        <button onclick="loadMedia()">
+            Refresh
+        </button>
+
+    </div>
+
+
+    <div
+        id="media-list"
+        class="record-list"
+    >
+        No media loaded.
+    </div>
 
 </div>
 

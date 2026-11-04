@@ -21,6 +21,10 @@ function showPanel(panelId) {
     if (panelId === "categories-panel") {
         loadCategories();
     }
+
+    if (panelId === "media-panel") {
+        loadMedia();
+    }
 }
 
 
@@ -520,6 +524,228 @@ function categoryCard(category) {
 
 
 // ============================================================
+// PROMOTIONAL MEDIA
+// ============================================================
+
+async function createMedia() {
+
+    const eventId =
+        document
+            .getElementById("media-create-event-id")
+            .value
+            .trim();
+
+    const imageUrl =
+        document
+            .getElementById("media-create-url")
+            .value
+            .trim();
+
+    if (!eventId || !imageUrl) {
+        showMessage("Event UUID and image URL are required.", "error");
+        return;
+    }
+
+    try {
+        const response = await fetch("/api/media", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ eventId, imageUrl })
+        });
+
+        if (!response.ok) {
+            await handleError(response);
+            return;
+        }
+
+        const media = await response.json();
+        showMessage("Created promotional media.");
+        document.getElementById("media-create-event-id").value = "";
+        document.getElementById("media-create-url").value = "";
+        document.getElementById("media-id").value = media.id;
+        fillMediaForm(media);
+        document.getElementById("media-result").innerHTML = mediaCard(media);
+        loadMedia();
+    } catch (error) {
+        connectionFailure(error);
+    }
+}
+
+
+async function readMedia() {
+
+    const id =
+        document
+            .getElementById("media-id")
+            .value
+            .trim();
+
+    if (!id) {
+        showMessage("Enter a media UUID.", "error");
+        return;
+    }
+
+    try {
+        const response = await fetch(
+            "/api/media/" + encodeURIComponent(id)
+        );
+
+        if (!response.ok) {
+            await handleError(response);
+            return;
+        }
+
+        const media = await response.json();
+        fillMediaForm(media);
+        document.getElementById("media-result").innerHTML = mediaCard(media);
+    } catch (error) {
+        connectionFailure(error);
+    }
+}
+
+
+async function updateMedia() {
+
+    const id =
+        document
+            .getElementById("media-id")
+            .value
+            .trim();
+
+    const eventId =
+        document
+            .getElementById("media-update-event-id")
+            .value
+            .trim();
+
+    const imageUrl =
+        document
+            .getElementById("media-update-url")
+            .value
+            .trim();
+
+    if (!id || !eventId || !imageUrl) {
+        showMessage("Media UUID, event UUID, and image URL are required.", "error");
+        return;
+    }
+
+    try {
+        const response = await fetch(
+            "/api/media/" + encodeURIComponent(id),
+            {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ eventId, imageUrl })
+            }
+        );
+
+        if (!response.ok) {
+            await handleError(response);
+            return;
+        }
+
+        const media = await response.json();
+        showMessage("Updated promotional media.");
+        document.getElementById("media-result").innerHTML = mediaCard(media);
+        loadMedia();
+    } catch (error) {
+        connectionFailure(error);
+    }
+}
+
+
+async function deleteMedia() {
+
+    const id =
+        document
+            .getElementById("media-id")
+            .value
+            .trim();
+
+    if (!id) {
+        showMessage("Enter a media UUID.", "error");
+        return;
+    }
+
+    if (!window.confirm("Delete this promotional media?")) {
+        return;
+    }
+
+    try {
+        const response = await fetch(
+            "/api/media/" + encodeURIComponent(id),
+            { method: "DELETE" }
+        );
+
+        if (!response.ok) {
+            await handleError(response);
+            return;
+        }
+
+        showMessage("Promotional media deleted.");
+        document.getElementById("media-id").value = "";
+        document.getElementById("media-update-event-id").value = "";
+        document.getElementById("media-update-url").value = "";
+        document.getElementById("media-result").innerHTML = "";
+        loadMedia();
+    } catch (error) {
+        connectionFailure(error);
+    }
+}
+
+
+async function loadMedia() {
+
+    const list = document.getElementById("media-list");
+    list.innerHTML = "Loading...";
+
+    try {
+        const response = await fetch("/api/media");
+
+        if (!response.ok) {
+            list.innerHTML = "Unable to load promotional media.";
+            await handleError(response);
+            return;
+        }
+
+        const mediaItems = await response.json();
+
+        if (!Array.isArray(mediaItems) || mediaItems.length === 0) {
+            list.innerHTML = "No promotional media found.";
+            return;
+        }
+
+        list.innerHTML = mediaItems.map(mediaCard).join("");
+    } catch (error) {
+        list.innerHTML = "Unable to connect to FestHub.";
+        connectionFailure(error);
+    }
+}
+
+
+function fillMediaForm(media) {
+    document.getElementById("media-update-event-id").value = media.eventId;
+    document.getElementById("media-update-url").value = media.imageUrl;
+}
+
+
+function mediaCard(media) {
+    return `
+        <div class="record-card">
+            <h4>Promotional Media</h4>
+            <p>Event UUID: ${escapeHtml(media.eventId)}</p>
+            <p>Image URL: ${escapeHtml(media.imageUrl)}</p>
+            <small>UUID: ${escapeHtml(media.id)}</small>
+        </div>
+    `;
+}
+
+
+// ============================================================
 // API ERRORS
 // ============================================================
 
@@ -600,15 +826,6 @@ function eventNotConnected() {
 
     showMessage(
         "Concert Event service has not been connected to the client yet.",
-        "error"
-    );
-}
-
-
-function mediaNotConnected() {
-
-    showMessage(
-        "Promotional Media service has not been connected to the client yet.",
         "error"
     );
 }

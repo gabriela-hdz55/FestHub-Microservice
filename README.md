@@ -14,6 +14,10 @@ The gateway is the client-facing entry point on port `8080`. It forwards request
 
 Services should implement endpoints under their assigned public path. For example, an artist endpoint should be reachable at `/api/artist/...`. The gateway route targets can be changed independently with `ARTIST_SERVICE_URL`, `BOOKING_CATEGORY_SERVICE_URL`, `CONCERT_EVENT_SERVICE_URL`, and `PROMO_MEDIA_SERVICE_URL`.
 
+### Promotional media API
+
+The promo-media service supports `POST /api/media`, `GET /api/media`, `GET /api/media/{id}`, `PUT /api/media/{id}`, and `DELETE /api/media/{id}`. Create and update requests use JSON with an `eventId` UUID and a non-blank `imageUrl`. The media service stores the event UUID as a reference; it does not create a database foreign key across the separate service databases.
+
 ### Run the complete stack in Docker
 
 1. Copy `.env.example` to `.env` and set `DB_USER` and `DB_PASSWORD` to development-only values.
