@@ -1,16 +1,17 @@
 package com.festhub.concert_event.model;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
 import jakarta.persistence.CollectionTable;
+import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.Table;
 
-import java.util.UUID;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
 
 @Entity
 @Table(name = "concert_event")
@@ -31,12 +32,12 @@ public class ConcertEvent {
         @Column(name = "ticket_price_cents", nullable = false)
         private long ticketPriceCents;
 
-        @ElementCollection
+        @ElementCollection(fetch = FetchType.EAGER)
         @CollectionTable(name = "event_artist", joinColumns = @JoinColumn(name = "event_id"))
         @Column(name = "artist_id", nullable = false)
         private Set<UUID> artistIds = new HashSet<>();
 
-        @ElementCollection
+        @ElementCollection(fetch = FetchType.EAGER)
         @CollectionTable(name = "event_category", joinColumns = @JoinColumn(name = "event_id"))
         @Column(name = "category_id", nullable = false)
         private Set<UUID> categoryIds = new HashSet<>();
@@ -78,6 +79,14 @@ public class ConcertEvent {
                 return ticketPriceCents;
         }
 
+        public Set<UUID> getArtistIds() {
+                return artistIds;
+        }
+
+        public Set<UUID> getCategoryIds() {
+                return categoryIds;
+        }
+
         public void setName(String name) {
                 this.name = name;
         }
@@ -94,21 +103,15 @@ public class ConcertEvent {
                 this.ticketPriceCents = ticketPriceCents;
         }
 
-        public Set<UUID> getArtistIds() {
-                return artistIds;
-        }
-
-        public Set<UUID> getCategoryIds() {
-                return categoryIds;
-        }
-
         public void setArtistIds(Set<UUID> artistIds) {
+                Set<UUID> copy = new HashSet<>(artistIds);
                 this.artistIds.clear();
-                this.artistIds.addAll(artistIds);
+                this.artistIds.addAll(copy);
         }
 
         public void setCategoryIds(Set<UUID> categoryIds) {
+                Set<UUID> copy = new HashSet<>(categoryIds);
                 this.categoryIds.clear();
-                this.categoryIds.addAll(categoryIds);
+                this.categoryIds.addAll(copy);
         }
 }

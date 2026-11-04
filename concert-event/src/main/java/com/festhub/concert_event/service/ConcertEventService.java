@@ -2,12 +2,12 @@ package com.festhub.concert_event.service;
 
 import com.festhub.concert_event.clients.ArtistClient;
 import com.festhub.concert_event.clients.BookingCategoryClient;
+import com.festhub.concert_event.clients.PromoMediaClient;
 import com.festhub.concert_event.exception.ConcertEventNotFoundException;
 import com.festhub.concert_event.model.ConcertEvent;
 import com.festhub.concert_event.repository.ConcertEventRepository;
 
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashSet;
 import java.util.List;
@@ -26,18 +26,24 @@ public class ConcertEventService {
     private final ConcertEventRepository repository;
     private final BookingCategoryClient categoryClient;
     private final ArtistClient artistClient;
+    private final PromoMediaClient mediaClient;
 
     public ConcertEventService(
             ConcertEventRepository repository,
             BookingCategoryClient categoryClient,
-            ArtistClient artistClient) {
+            ArtistClient artistClient,
+            PromoMediaClient mediaClient) {
 
         this.repository = repository;
         this.categoryClient = categoryClient;
         this.artistClient = artistClient;
+        this.mediaClient = mediaClient;
     }
 
-    @Transactional
+    // ============================================================
+    // CREATE
+    // ============================================================
+
     public ConcertEvent create(
             UUID id,
             String name,
@@ -69,27 +75,36 @@ public class ConcertEventService {
                 availableTickets,
                 ticketPriceCents);
 
-        event.setArtistIds(new HashSet<>(artistIds));
-        event.setCategoryIds(new HashSet<>(categoryIds));
+        event.setArtistIds(artistIds);
+        event.setCategoryIds(categoryIds);
 
         return repository.save(event);
     }
 
-    @Transactional(readOnly = true)
+    // ============================================================
+    // READ
+    // ============================================================
+
     public ConcertEvent get(UUID id) {
-        ConcertEvent event = findEvent(id);
-        initializeAssociations(event);
-        return event;
+        return findEvent(id);
     }
 
-    @Transactional(readOnly = true)
     public List<ConcertEvent> getAll() {
-        List<ConcertEvent> events = repository.findAll();
-        events.forEach(this::initializeAssociations);
-        return events;
+        return repository.findAll();
     }
 
-    @Transactional
+    public List<UUID> getEventIdsForArtist(UUID artistId) {
+        return repository.findEventIdsByArtistId(artistId);
+    }
+
+    public List<UUID> getEventIdsForCategory(UUID categoryId) {
+        return repository.findEventIdsByCategoryId(categoryId);
+    }
+
+    // ============================================================
+    // UPDATE
+    // ============================================================
+
     public ConcertEvent update(
             UUID id,
             String name,
@@ -113,29 +128,47 @@ public class ConcertEventService {
         event.setDescription(description);
         event.setAvailableTickets(availableTickets);
         event.setTicketPriceCents(ticketPriceCents);
-        event.setArtistIds(new HashSet<>(artistIds));
-        event.setCategoryIds(new HashSet<>(categoryIds));
+        event.setArtistIds(artistIds);
+        event.setCategoryIds(categoryIds);
 
         return repository.save(event);
     }
 
-    @Transactional
+    // ============================================================
+    // DELETE
+    // ============================================================
+
     public void delete(UUID id) {
+
         ConcertEvent event = findEvent(id);
+
+        Set<UUID> categoryIds = new HashSet<>(event.getCategoryIds());
+
+        // Retrieve attached media before deleting anything.
+        List<PromoMediaClient.MediaRecord> mediaRecords = mediaClient.getForEvent(id);
+
+        // Repository deletion commits before remote cleanup starts.
         repository.delete(event);
+
+        // Delete media attached to the removed event.
+        for (PromoMediaClient.MediaRecord media : mediaRecords) {
+            mediaClient.deleteIfPresent(media.id());
+        }
+
+        // Preserve categories that still have other events.
+        for (UUID categoryId : categoryIds) {
+            if (repository.findEventIdsByCategoryId(categoryId).isEmpty()) {
+                categoryClient.deleteIfPresent(categoryId);
+            }
+        }
     }
 
-    @Transactional(readOnly = true)
-    public List<UUID> getEventIdsForArtist(UUID artistId) {
-        return repository.findEventIdsByArtistId(artistId);
-    }
-
-    @Transactional(readOnly = true)
-    public List<UUID> getEventIdsForCategory(UUID categoryId) {
-        return repository.findEventIdsByCategoryId(categoryId);
-    }
+    // ============================================================
+    // LOOKUP AND ASSOCIATION VALIDATION
+    // ============================================================
 
     private ConcertEvent findEvent(UUID id) {
+
         if (id == null) {
             throw new IllegalArgumentException(
                     "Concert event ID is required");
@@ -144,11 +177,6 @@ public class ConcertEventService {
         return repository.findById(id)
                 .orElseThrow(
                         () -> new ConcertEventNotFoundException(id));
-    }
-
-    private void initializeAssociations(ConcertEvent event) {
-        event.getArtistIds().size();
-        event.getCategoryIds().size();
     }
 
     private void validateArtists(Set<UUID> artistIds) {
@@ -160,37 +188,6 @@ public class ConcertEventService {
     private void validateCategories(Set<UUID> categoryIds) {
         for (UUID categoryId : categoryIds) {
             categoryClient.validateExists(categoryId);
-        }
-    }
-
-    private void validateArtistEventRules(
-            UUID eventId,
-            String name,
-            long ticketPriceCents,
-            Set<UUID> artistIds) {
-
-        for (UUID artistId : artistIds) {
-            if (repository.hasConflictingEventName(
-                    artistId, eventId, name)) {
-
-                throw new IllegalArgumentException(
-                        "Artist " + artistId
-                                + " already has another event named "
-                                + name);
-            }
-
-            long otherPrices = repository.sumOtherEventTicketPrices(
-                    artistId, eventId);
-
-            if (ticketPriceCents > MAX_ARTIST_TICKET_PRICE_SUM_CENTS
-                    || otherPrices > MAX_ARTIST_TICKET_PRICE_SUM_CENTS
-                            - ticketPriceCents) {
-
-                throw new IllegalArgumentException(
-                        "This event would exceed the "
-                                + "$500,000 ticket-price cap for artist "
-                                + artistId);
-            }
         }
     }
 
@@ -218,6 +215,46 @@ public class ConcertEventService {
         }
     }
 
+    // ============================================================
+    // ARTIST EVENT RULES
+    // ============================================================
+
+    private void validateArtistEventRules(
+            UUID eventId,
+            String name,
+            long ticketPriceCents,
+            Set<UUID> artistIds) {
+
+        for (UUID artistId : artistIds) {
+
+            if (repository.hasConflictingEventName(
+                    artistId, eventId, name)) {
+
+                throw new IllegalArgumentException(
+                        "Artist " + artistId
+                                + " already has another event named "
+                                + name);
+            }
+
+            long otherPrices = repository.sumOtherEventTicketPrices(
+                    artistId, eventId);
+
+            if (ticketPriceCents > MAX_ARTIST_TICKET_PRICE_SUM_CENTS
+                    || otherPrices > MAX_ARTIST_TICKET_PRICE_SUM_CENTS
+                            - ticketPriceCents) {
+
+                throw new IllegalArgumentException(
+                        "This event would exceed the "
+                                + "$500,000 ticket-price cap for artist "
+                                + artistId);
+            }
+        }
+    }
+
+    // ============================================================
+    // EVENT FIELD VALIDATION
+    // ============================================================
+
     private static void validate(
             String name,
             String description,
@@ -232,8 +269,7 @@ public class ConcertEventService {
         if (name.length() > MAX_NAME_LENGTH) {
             throw new IllegalArgumentException(
                     "Concert event name cannot exceed "
-                            + MAX_NAME_LENGTH
-                            + " characters");
+                            + MAX_NAME_LENGTH + " characters");
         }
 
         if (description == null || description.isBlank()) {
@@ -244,8 +280,7 @@ public class ConcertEventService {
         if (description.length() > MAX_DESCRIPTION_LENGTH) {
             throw new IllegalArgumentException(
                     "Concert event description cannot exceed "
-                            + MAX_DESCRIPTION_LENGTH
-                            + " characters");
+                            + MAX_DESCRIPTION_LENGTH + " characters");
         }
 
         if (availableTickets < 0) {
@@ -258,12 +293,12 @@ public class ConcertEventService {
                     "Ticket price must be greater than zero");
         }
 
-        if (availableTickets == 0 && ticketPriceCents > MAX_SOLD_OUT_PRICE_CENTS) {
+        if (availableTickets == 0
+                && ticketPriceCents > MAX_SOLD_OUT_PRICE_CENTS) {
 
             throw new IllegalArgumentException(
                     "Sold-out concert event ticket price cannot exceed "
-                            + MAX_SOLD_OUT_PRICE_CENTS
-                            + " cents");
+                            + MAX_SOLD_OUT_PRICE_CENTS + " cents");
         }
     }
 }

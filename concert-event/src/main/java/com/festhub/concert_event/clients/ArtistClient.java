@@ -33,7 +33,7 @@ public class ArtistClient {
     public void validateExists(UUID artistId) {
         try {
             client.get()
-                    .uri("/api/artist/{id}", artistId)
+                    .uri("/api/artist/read?id={id}", artistId)
                     .retrieve()
                     .toBodilessEntity();
 

@@ -30,7 +30,12 @@ public class BookingCategoryClient {
                 .build();
     }
 
+    // ============================================================
+    // VALIDATE CATEGORY
+    // ============================================================
+
     public void validateExists(UUID categoryId) {
+
         try {
             client.get()
                     .uri("/api/category/{id}", categoryId)
@@ -38,6 +43,7 @@ public class BookingCategoryClient {
                     .toBodilessEntity();
 
         } catch (RestClientResponseException exception) {
+
             if (exception.getStatusCode().value() == 404) {
                 throw new IllegalArgumentException(
                         "Booking category does not exist: " + categoryId);
@@ -49,9 +55,43 @@ public class BookingCategoryClient {
                     exception);
 
         } catch (RestClientException exception) {
+
             throw new ResponseStatusException(
                     HttpStatus.SERVICE_UNAVAILABLE,
                     "Category service is unavailable",
+                    exception);
+        }
+    }
+
+    // ============================================================
+    // DELETE UNUSED CATEGORY
+    // ============================================================
+
+    public void deleteIfPresent(UUID categoryId) {
+
+        try {
+            client.delete()
+                    .uri("/api/category/{id}", categoryId)
+                    .retrieve()
+                    .toBodilessEntity();
+
+        } catch (RestClientResponseException exception) {
+
+            if (exception.getStatusCode().value() == 404) {
+                return;
+            }
+
+            throw new ResponseStatusException(
+                    HttpStatus.SERVICE_UNAVAILABLE,
+                    "Event deleted, but category cleanup failed: "
+                            + categoryId,
+                    exception);
+
+        } catch (RestClientException exception) {
+
+            throw new ResponseStatusException(
+                    HttpStatus.SERVICE_UNAVAILABLE,
+                    "Event deleted, but Category service is unavailable",
                     exception);
         }
     }
