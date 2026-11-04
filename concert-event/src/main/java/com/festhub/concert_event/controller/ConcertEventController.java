@@ -37,6 +37,28 @@ public class ConcertEventController {
         return ResponseEntity.status(201).body(event);
     }
 
+    @PutMapping("/{id}")
+    public ConcertEvent update(
+            @PathVariable UUID id,
+            @Valid @RequestBody UpdateConcertEventRequest request) {
+
+        return service.update(
+                id,
+                request.name(),
+                request.description(),
+                request.availableTickets(),
+                request.ticketPriceCents(),
+                request.artistIds(),
+                request.categoryIds());
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable UUID id) {
+        service.delete(id);
+
+        return ResponseEntity.noContent().build();
+    }
+
     @GetMapping("/{id}")
     public ConcertEvent get(@PathVariable UUID id) {
         return service.get(id);
