@@ -393,9 +393,9 @@
         <input id="media-create-url" type="text">
 
 
-        <button onclick="mediaNotConnected()">
-            Create Media
-        </button>
+    <button onclick="createMedia()">
+        Create Media
+    </button>
 
 
         <hr>
@@ -412,13 +412,16 @@
 
         <div class="button-row">
 
-            <button onclick="mediaNotConnected()">
-                Read
-            </button>
+        <button onclick="readMedia()">
+            Read
+        </button>
 
-            <button class="danger" onclick="mediaNotConnected()">
-                Delete
-            </button>
+        <button
+            class="danger"
+            onclick="deleteMedia()"
+        >
+            Delete
+        </button>
 
         </div>
 
@@ -437,14 +440,36 @@
         <input id="media-update-url" type="text">
 
 
-        <button onclick="mediaNotConnected()">
-            Update Media
-        </button>
+    <button onclick="updateMedia()">
+        Update Media
+    </button>
 
 
         <div id="media-result" class="result"></div>
 
+
+    <hr>
+
+
+    <div class="heading-row">
+
+        <h3>All Promotional Media</h3>
+
+        <button onclick="loadMedia()">
+            Refresh
+        </button>
+
     </div>
+
+
+    <div
+        id="media-list"
+        class="record-list"
+    >
+        No media loaded.
+    </div>
+
+</div>
 
 
     <!-- ===================================================== -->
