@@ -1351,10 +1351,467 @@ public class Main {
     // microservice APIs once those API contracts are finalized.
     // ============================================================
 
+    // ============================================================
+    // ARTIST MENU
+    // ============================================================
+
     private static void artistMenu() {
 
-        showPendingMenu(
-                "ARTISTS"
+        while (true) {
+
+            System.out.println();
+            System.out.println(
+                    "================================"
+            );
+            System.out.println(
+                    "            ARTISTS"
+            );
+            System.out.println(
+                    "================================"
+            );
+
+            System.out.println(
+                    "1. Create Artist"
+            );
+            System.out.println(
+                    "2. Read Artist"
+            );
+            System.out.println(
+                    "3. Update Artist"
+            );
+            System.out.println(
+                    "4. Delete Artist"
+            );
+            System.out.println(
+                    "0. Back"
+            );
+
+            System.out.println();
+
+            System.out.print(
+                    "Choose an option: "
+            );
+
+            String choice =
+                    SCANNER.nextLine().trim();
+
+            switch (choice) {
+
+                case "1" ->
+                        createArtist();
+
+                case "2" ->
+                        readArtist();
+
+                case "3" ->
+                        updateArtist();
+
+                case "4" ->
+                        deleteArtist();
+
+                case "0" -> {
+                    return;
+                }
+
+                default ->
+                        System.out.println(
+                                "\nInvalid option."
+                        );
+            }
+        }
+    }
+
+
+    // ============================================================
+    // CREATE ARTIST
+    // ============================================================
+
+    private static void createArtist() {
+
+        System.out.println();
+        System.out.println(
+                "--- Create Artist ---"
+        );
+
+        System.out.print(
+                "Name: "
+        );
+
+        String name =
+                SCANNER.nextLine().trim();
+
+        System.out.print(
+                "Booking Contact (Email): "
+        );
+
+        String bookingContact =
+                SCANNER.nextLine().trim();
+
+
+        try {
+
+            // Maps to CreateArtistRequest.java
+            String requestBody =
+                    MAPPER
+                            .createObjectNode()
+                            .put(
+                                    "name",
+                                    name
+                            )
+                            .put(
+                                    "bookingContact",
+                                    bookingContact
+                            )
+                            .toString();
+
+
+            // Routes to @PostMapping("/create") in ArtistController.java
+            HttpRequest request =
+                    HttpRequest
+                            .newBuilder()
+                            .uri(
+                                    URI.create(
+                                            API_URL
+                                                    + "/api/artist/create"
+                                    )
+                            )
+                            .header(
+                                    "Content-Type",
+                                    "application/json"
+                            )
+                            .POST(
+                                    HttpRequest
+                                            .BodyPublishers
+                                            .ofString(
+                                                    requestBody
+                                            )
+                            )
+                            .build();
+
+
+            HttpResponse<String> response =
+                    CLIENT.send(
+                            request,
+                            HttpResponse
+                                    .BodyHandlers
+                                    .ofString()
+                    );
+
+
+            if (response.statusCode() == 200) {
+
+                System.out.println();
+                System.out.println(
+                        "Artist created successfully."
+                );
+
+                JsonNode artist =
+                        MAPPER.readTree(
+                                response.body()
+                        );
+
+                printArtist(artist);
+
+            } else {
+
+                printError(response);
+            }
+
+        } catch (Exception exception) {
+
+            printRequestFailure(exception);
+        }
+    }
+
+
+    // ============================================================
+    // READ ARTIST
+    // ============================================================
+
+    private static void readArtist() {
+
+        System.out.println();
+        System.out.println(
+                "--- Read Artist ---"
+        );
+
+        System.out.print(
+                "Artist ID: "
+        );
+
+        String id =
+                SCANNER.nextLine().trim();
+
+
+        try {
+
+            // Routes to @GetMapping("/read") with @RequestParam UUID id
+            HttpRequest request =
+                    HttpRequest
+                            .newBuilder()
+                            .uri(
+                                    URI.create(
+                                            API_URL
+                                                    + "/api/artist/read?id="
+                                                    + id
+                                    )
+                            )
+                            .GET()
+                            .build();
+
+
+            HttpResponse<String> response =
+                    CLIENT.send(
+                            request,
+                            HttpResponse
+                                    .BodyHandlers
+                                    .ofString()
+                    );
+
+
+            if (response.statusCode() == 200) {
+
+                JsonNode artist =
+                        MAPPER.readTree(
+                                response.body()
+                        );
+
+                System.out.println();
+
+                printArtist(artist);
+
+            } else {
+
+                printError(response);
+            }
+
+        } catch (Exception exception) {
+
+            printRequestFailure(exception);
+        }
+    }
+
+
+    // ============================================================
+    // UPDATE ARTIST
+    // ============================================================
+
+    private static void updateArtist() {
+
+        System.out.println();
+        System.out.println(
+                "--- Update Artist ---"
+        );
+
+        System.out.print(
+                "Artist ID: "
+        );
+
+        String id =
+                SCANNER.nextLine().trim();
+
+        System.out.print(
+                "New name: "
+        );
+
+        String name =
+                SCANNER.nextLine().trim();
+
+        System.out.print(
+                "New booking contact: "
+        );
+
+        String bookingContact =
+                SCANNER.nextLine().trim();
+
+
+        try {
+
+            // Maps to UpdateArtistRequest.java
+            String requestBody =
+                    MAPPER
+                            .createObjectNode()
+                            .put(
+                                    "id",
+                                    id
+                            )
+                            .put(
+                                    "name",
+                                    name
+                            )
+                            .put(
+                                    "bookingContact",
+                                    bookingContact
+                            )
+                            .toString();
+
+
+            // Routes to @PostMapping("/update") in ArtistController.java
+            HttpRequest request =
+                    HttpRequest
+                            .newBuilder()
+                            .uri(
+                                    URI.create(
+                                            API_URL
+                                                    + "/api/artist/update"
+                                    )
+                            )
+                            .header(
+                                    "Content-Type",
+                                    "application/json"
+                            )
+                            .POST(
+                                    HttpRequest
+                                            .BodyPublishers
+                                            .ofString(
+                                                    requestBody
+                                            )
+                            )
+                            .build();
+
+
+            HttpResponse<String> response =
+                    CLIENT.send(
+                            request,
+                            HttpResponse
+                                    .BodyHandlers
+                                    .ofString()
+                    );
+
+
+            if (response.statusCode() == 200) {
+
+                System.out.println();
+                System.out.println(
+                        "Artist updated successfully."
+                );
+
+                JsonNode artist =
+                        MAPPER.readTree(
+                                response.body()
+                        );
+
+                printArtist(artist);
+
+            } else {
+
+                printError(response);
+            }
+
+        } catch (Exception exception) {
+
+            printRequestFailure(exception);
+        }
+    }
+
+
+    // ============================================================
+    // DELETE ARTIST
+    // ============================================================
+
+    private static void deleteArtist() {
+
+        System.out.println();
+        System.out.println(
+                "--- Delete Artist ---"
+        );
+
+        System.out.print(
+                "Artist ID: "
+        );
+
+        String id =
+                SCANNER.nextLine().trim();
+
+        System.out.print(
+                "Are you sure? (y/n): "
+        );
+
+        String confirmation =
+                SCANNER.nextLine().trim();
+
+
+        if (!confirmation.equalsIgnoreCase("y")) {
+
+            System.out.println(
+                    "Delete cancelled."
+            );
+
+            return;
+        }
+
+
+        try {
+
+            // Routes to @DeleteMapping("/delete") with @RequestParam UUID id
+            HttpRequest request =
+                    HttpRequest
+                            .newBuilder()
+                            .uri(
+                                    URI.create(
+                                            API_URL
+                                                    + "/api/artist/delete?id="
+                                                    + id
+                                    )
+                            )
+                            .DELETE()
+                            .build();
+
+
+            HttpResponse<String> response =
+                    CLIENT.send(
+                            request,
+                            HttpResponse
+                                    .BodyHandlers
+                                    .ofString()
+                    );
+
+
+            if (response.statusCode() == 200) {
+
+                System.out.println();
+                System.out.println(
+                        "Artist deleted successfully."
+                );
+
+            } else {
+
+                printError(response);
+            }
+
+        } catch (Exception exception) {
+
+            printRequestFailure(exception);
+        }
+    }
+
+
+    // ============================================================
+    // DISPLAY HELPER FOR ARTIST
+    // ============================================================
+
+    private static void printArtist(
+            JsonNode artist) {
+
+        System.out.println(
+                "ID:              "
+                        + artist
+                        .path("id")
+                        .asText()
+        );
+
+        System.out.println(
+                "Name:            "
+                        + artist
+                        .path("name")
+                        .asText()
+        );
+
+        System.out.println(
+                "Booking Contact: "
+                        + artist
+                        .path("bookingContact")
+                        .asText()
         );
     }
 

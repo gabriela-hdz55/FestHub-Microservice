@@ -69,9 +69,11 @@
         <input id="artist-create-contact" type="text">
 
 
-        <button onclick="artistNotConnected()">
-            Create Artist
-        </button>
+    <button
+        onclick="createArtist()"
+    >
+        Create Artist
+    </button>
 
 
         <hr>
@@ -88,13 +90,16 @@
 
         <div class="button-row">
 
-            <button onclick="artistNotConnected()">
-                Read
-            </button>
+        <button onclick="readArtist()">
+            Read
+        </button>
 
-            <button class="danger" onclick="artistNotConnected()">
-                Delete
-            </button>
+        <button
+            class="danger"
+            onclick="deleteArtist()"
+        >
+            Delete
+        </button>
 
         </div>
 
@@ -113,9 +118,9 @@
         <input id="artist-update-contact" type="text">
 
 
-        <button onclick="artistNotConnected()">
-            Update Artist
-        </button>
+    <button onclick="updateArtist()">
+        Update Artist
+    </button>
 
 
         <div id="artist-result" class="result"></div>
